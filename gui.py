@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSlider, QLabel, QPushBut
 from PyQt5.QtCore import Qt
 import cv2
 from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
-PATH = r'Bilder/2020_11_04-Pd-aAl__5.dm3'
+PATH = r'Bilder/2020_10_29-Pd-gAl__11.dm3'
 DPI = 10
 
 class Export_img(QMainWindow):

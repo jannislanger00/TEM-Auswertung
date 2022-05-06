@@ -44,14 +44,14 @@ mn, mx, _, _ = cv2.minMaxLoc(nxcor)
 th, peaks = cv2.threshold(nxcor, mx*0.45, 255, cv2.THRESH_BINARY)
 peaks8u = cv2.convertScaleAbs(peaks)
 contours, hierarchy = cv2.findContours(peaks8u, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-peaks8u = cv2.convertScaleAbs(peaks)    # to use as mask
+
 
 counter = 0
 size = np.zeros(len(contours))
 for i in range(len(contours)):
     cv2.drawContours(img, contours, i, (0, 0, 255), 1)
     x, y, w, h = cv2.boundingRect(contours[i])
-    _, mx, _, mxloc = cv2.minMaxLoc(dist[y:y + h, x:x + w], peaks8u[y:y + h, x:x + w])
+    _, mx, _, mxloc = cv2.minMaxLoc(dist[y:y + h, x:x + w])
     if 7.5 <= mx <= 400:
         center = (int(mxloc[0]+x), int(mxloc[1]+y))
         radius = int(np.round(mx))
