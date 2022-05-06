@@ -15,7 +15,7 @@ def read_dm3_file(path):
     return dm3f
 
 
-def dm3_to_cv(dm3f, scale=1, alpha=1.0, beta=0):
+def dm3_to_cv(dm3f, alpha=1.0, beta=0):
     # convert to float32 and divide by the biggest value
     img = dm3f.imagedata
     img = np.float32(img)
@@ -25,7 +25,7 @@ def dm3_to_cv(dm3f, scale=1, alpha=1.0, beta=0):
     # multiply by 255 and transform to uint8 array
     img = np.uint8(img * 255)
     # scale image, default by 1
-    img = cv2.resize(img, (0, 0), fx=scale, fy=scale)
+    '''img = cv2.resize(img, (0, 0), fx=scale, fy=scale)'''
     # Adjust image
     img = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
     return img
@@ -40,7 +40,7 @@ def main():
     # Einlesen dm3 Datei
     dm3_file = read_dm3_file(PATH)
     # Umwandenl in Opencv Format (RGB, uint8)
-    img = dm3_to_cv(dm3_file, SCALE, ALPHA, BETA)
+    img = dm3_to_cv(dm3_file, ALPHA, BETA)
     # Pixelgröße bestimmen
     px_size = get_px_size(dm3_file)
 
