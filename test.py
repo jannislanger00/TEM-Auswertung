@@ -5,7 +5,7 @@ import dm3_lib as dm3
 #from PIL import Image
 from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
 
-PATH = r'Bilder/2020_11_04-Pd-aAl__5.dm3'  # 'Bilder/2020_10_29-Pd-gAl__11.dm3'
+PATH = r'Bilder/2020_10_06-Pd-Zr__7.dm3'  # 'Bilder/2020_10_29-Pd-gAl__11.dm3'
 SCALE = 0.5
 ALPHA = 5  # Contrast
 BETA = -250   # Brightness

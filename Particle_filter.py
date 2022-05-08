@@ -60,15 +60,19 @@ class Filter_img(QMainWindow):
         #start Values
         self.bg_thresh = 0.35
         self.peaksTresh = 0.45
+        self.blockSize = 41
+        self.C = 2
         #Template
         self.particle_size = 20 # pixel
         self.gap = 14
         #start up
+        self.kernel3 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        self.kernel5 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
         self.img = import_img(path)
         self.text_input = False
         self.update_all()
         # Toolbar
-        self.setGeometry(50,50,650,600)
+        self.setGeometry(50,50,750,900)
         self.setWindowTitle("Particle Detection")
         self.createUI()
         self.show()
@@ -81,6 +85,12 @@ class Filter_img(QMainWindow):
         self.textbox.setText(str(self.particle_size))
         if self.textbox.text().isnumeric() == True:
             self.text_input = True
+        elif self.textbox.text().isnumeric() == False:
+            self.text_input = False
+            self.textbox.setText('error')
+        label_partSize = QLabel('Particle Size (px)', self)
+        label_partSize.setGeometry(30, 20, 270, 60)
+
         #Background Thresholt
         bg_slider = QSlider(Qt.Horizontal, self)
         bg_slider.setRange(0, 1*DPI)
@@ -94,71 +104,135 @@ class Filter_img(QMainWindow):
         #Peaks
         peaks_slider = QSlider(Qt.Horizontal, self)
         peaks_slider.setRange(0, 1*DPI)
-        peaks_slider.setGeometry(300, 200, 300, 60)
+        peaks_slider.setGeometry(300, 300, 300, 60)
         peaks_slider.setSliderPosition(int(self.peaksTresh*DPI))
         self.label_peaks = QLabel('Peaks Thresh', self)
-        self.label_peaks.setGeometry(30, 200, 270, 60)
+        self.label_peaks.setGeometry(30, 300, 270, 60)
         self.label_peaks.setText('Peaks Thresh: ' + str(self.peaksTresh))
-        print(str(self.peaksTresh))
         peaks_slider.valueChanged[int].connect(self.changePeaksThresh)
 
+        #Blocksize
+        blockSize_slider = QSlider(Qt.Horizontal, self)
+        blockSize_slider.setRange(1, 1*DPI // 2)
+        blockSize_slider.setGeometry(300, 200, 300, 60)
+        blockSize_slider.setSliderPosition(int(self.blockSize//2))
+        self.label_blockSize = QLabel('(Adaptive Thresh) Block Size', self)
+        self.label_blockSize.setGeometry(30, 200, 270, 60)
+        self.label_blockSize.setText('Block Size: ' + str(self.blockSize))
+        blockSize_slider.valueChanged[int].connect(self.changeBlockSize)
+        # Mean C
+        self.textbox_C = QLineEdit(self)
+        self.textbox_C.move(680, 200)
+        self.textbox_C.resize(70,40)
+        self.textbox_C.setText(str(self.C))
+        self.textbox_C.textChanged[str].connect(self.textCupdate)
+        label_C = QLabel('C:', self)
+        label_C.setGeometry(630, 200, 40, 40)
+        # Update Button
         update_button = QPushButton('Update', self)
         update_button.resize(200, 32)
-        update_button.move(150, 300)
+        update_button.move(150, 500)
         update_button.clicked.connect(self.update_all)
 
         res_button = QPushButton('Aprox. Particles', self)
         res_button.resize(200, 32)
-        res_button.move(350, 300)
+        res_button.move(350, 500)
         res_button.clicked.connect(self.calcParticles)
 
         self.comp_button = QPushButton('Compare', self)
+        self.comp_button.setCheckable(True) #Switch
         self.comp_button.resize(200, 32)
-        self.comp_button.move(150, 400)
+        self.comp_button.move(150, 700)
         self.comp_button.clicked.connect(self.compareImg)
 
         self.original_button = QPushButton('show Image', self)
         self.original_button.resize(200, 32)
-        self.original_button.move(350, 400)
+        self.original_button.move(350, 700)
         self.original_button.clicked.connect(self.showOriginal)
+
+    def textCupdate(self):
+        if self.textbox_C.text().isnumeric() == True:
+            self.C = int(self.textbox_C.text())
+        elif self.textbox_C.text().isnumeric() == False:
+            self.textbox_C.setText('error')
+            self.textbox_C.selectAll()
+
+        self.updateAdThresh()
 
     def changeBgThresh(self, value):
         self.bg_thresh = value / DPI
+        self.k = 0
         self.updateBgTresh()
         self.label_bg_thresh.setText('Background Thresholt: ' + str(self.bg_thresh))
 
     def changePeaksThresh(self, value):
         self.peaksTresh = value / DPI
+        self.k = 3
         self.label_peaks.setText('Peaks Thresh: ' + str(self.peaksTresh))
         self.updatePeaks()
+
+    def changeBlockSize(self, value):
+        self.blockSize = value*2+1
+        self.k = 1
+        self.label_blockSize.setText('Block Size: ' + str(self.blockSize))
+        self.updateAdThresh()
 
     def updateBgTresh(self):
         gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
         gray = cv2.GaussianBlur(gray, (13, 13), 0)
-        th, self.bw = cv2.threshold(gray, self.bg_thresh * np.amax(gray), 255, cv2.THRESH_BINARY_INV)
-        res = resizeImg(self.bw, SCALE)
-        self.k = 0
+        th, bw = cv2.threshold(gray, self.bg_thresh * np.amax(gray), 255, cv2.THRESH_BINARY_INV)
+        self.output_bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, self.kernel5)
+        if self.comp_button.isChecked():
+            res = self.img.copy()
+            contours, hierarchy = cv2.findContours(self.output_bw, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(res, contours, -1, (0, 255, 0), 2)
+        else:
+            res = self.output_bw
+        res = resizeImg(res, SCALE)
+        cv2.imshow('img', res)
+
+    def updateAdThresh(self):
+        ad_th = cv2.adaptiveThreshold(self.gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
+                                      self.blockSize, self.C)
+        masked = cv2.bitwise_and(ad_th, ad_th, mask=self.output_bw)
+        self.output_ad_th = cv2.morphologyEx(masked, cv2.MORPH_OPEN, self.kernel3)
+        if self.comp_button.isChecked():
+            res = self.img.copy()
+            contours, hierarchy = cv2.findContours(self.output_ad_th, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(res, contours, -1, (0, 255, 0), 2)
+        else:
+            res = self.output_ad_th
+        res = resizeImg(res, SCALE)
         cv2.imshow('img', res)
 
     def updatePeaks(self):
         mn, mx, _, _ = cv2.minMaxLoc(self.nxcor)
         th, peaks = cv2.threshold(self.nxcor, mx * self.peaksTresh, 255, cv2.THRESH_BINARY)
         self.peaks8u = cv2.convertScaleAbs(peaks)
-        res = resizeImg(self.peaks8u, SCALE)
-        self.k = 3
+        if self.comp_button.isChecked():
+            res = self.img.copy()
+            contours, hierarchy = cv2.findContours(self.peaks8u, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(res, contours, -1, (0, 0, 255), 2)
+        else:
+            res = self.peaks8u
+        res = resizeImg(res, SCALE)
         cv2.imshow('img', res)
 
     def showOriginal(self):
         res = resizeImg(self.img, SCALE)
         cv2.imshow('img', res)
 
+    def compare(self):
+        pass
+
     def compareImg(self):
         img_ref = self.imgList[self.k]
         res = self.img.copy()
-        if img_ref is not None:
+        if self.comp_button.isChecked() and img_ref is not None:
             contours, hierarchy = cv2.findContours(img_ref, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-            for i in range(len(contours)):
-                cv2.drawContours(res, contours, i, (0, 0, 255), 1)
+            cv2.drawContours(res, contours, -1, (0, 0, 255), 1)
+        else:
+            res = img_ref
 
         res = resizeImg(res, SCALE)
         cv2.imshow('img', res)
@@ -167,21 +241,18 @@ class Filter_img(QMainWindow):
         if self.text_input == True:
             self.particle_size = int(self.textbox.text())
         #bw
-        gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
-        gray = cv2.GaussianBlur(gray, (13, 13), 0)
-        th, self.bw = cv2.threshold(gray, self.bg_thresh * np.amax(gray), 255, cv2.THRESH_BINARY_INV)
-
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        output_bw = cv2.morphologyEx(self.bw, cv2.MORPH_OPEN, kernel)
+        gray1 = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
+        gray = cv2.GaussianBlur(gray1, (13, 13), 0)
+        th, bw = cv2.threshold(gray, self.bg_thresh * np.amax(gray), 255, cv2.THRESH_BINARY_INV)
+        self.output_bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, self.kernel5)
         #Adthresh
-        gray = cv2.GaussianBlur(gray, (31, 31), 0)
-        ad_th = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 41, 2)
-        masked = cv2.bitwise_and(ad_th, ad_th, mask=output_bw)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        output_ad_th = cv2.morphologyEx(masked, cv2.MORPH_OPEN, kernel)
-        self.dist = cv2.distanceTransform(output_ad_th, cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
+        self.gray = cv2.GaussianBlur(gray, (31, 31), 0)
+        ad_th = cv2.adaptiveThreshold(self.gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, self.blockSize, self.C)
+        masked = cv2.bitwise_and(ad_th, ad_th, mask=self.output_bw)
+        self.output_ad_th = cv2.morphologyEx(masked, cv2.MORPH_OPEN, self.kernel3)
+        self.dist = cv2.distanceTransform(self.output_ad_th, cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
+        #nxcor
         borderSize = int((self.particle_size/2) + self.gap)
-        print(borderSize)
         distborder = cv2.copyMakeBorder(self.dist, borderSize, borderSize, borderSize, borderSize,
                                         cv2.BORDER_CONSTANT | cv2.BORDER_ISOLATED, 0)
 
@@ -194,14 +265,14 @@ class Filter_img(QMainWindow):
         mn, mx, _, _ = cv2.minMaxLoc(self.nxcor)
         th, peaks = cv2.threshold(self.nxcor, mx * self.peaksTresh, 255, cv2.THRESH_BINARY)
         peaks8u = cv2.convertScaleAbs(peaks)
-        contours, hierarchy = cv2.findContours(peaks8u, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         self.peaks8u = cv2.convertScaleAbs(peaks)
-        self.imgList = list((self.bw, self.dist, self.nxcor, self.peaks8u))
-        self.imgArray = list(([self.bw, self.dist], [self.nxcor, self.peaks8u]))
+        self.imgList = list((self.output_bw, self.output_ad_th, self.nxcor, self.peaks8u))
+        self.imgArray = list(([self.output_bw, self.output_ad_th], [self.nxcor, self.peaks8u]))
         imgStack = stackImages(SCALE/2, self.imgArray)
         cv2.imshow('img', imgStack)
 
     def calcParticles(self):
+        self.update_all()
         self.img_draw = self.img.copy()
         contours, hierarchy = cv2.findContours(self.peaks8u, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
         counter = 0
@@ -236,6 +307,5 @@ if __name__ == '__main__':
     #path = ex.getImgPath()
     #print(path)
     fil = Filter_img('Results/gui_img.jpg')
-
+    #cv2.destroyAllWindows()
     sys.exit(app.exec_())
-    cv2.destroyAllWindows()
