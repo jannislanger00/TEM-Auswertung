@@ -6,7 +6,7 @@ import cv2
 from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
 from gui import Export_img
 
-PATH = r'Bilder/2020_11_12-PdPt19_100_C-black_2.dm3'  # Path dm3 File
+PATH = r'Results/gui_img.jpg'  # Path dm3 File
 DPI = 100
 SCALE = 0.8
 
@@ -310,6 +310,6 @@ if __name__ == '__main__':
     # cv2.waitKey(0)
     # path = ex.getImgPath()
     # print(path)
-    fil = ParticleDetection('Results/gui_img.jpg')
+    fil = ParticleDetection(PATH)
     # cv2.destroyAllWindows()
     sys.exit(app.exec_())
