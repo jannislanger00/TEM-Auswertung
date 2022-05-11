@@ -6,7 +6,7 @@ import cv2
 from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
 from gui import Export_img
 
-PATH = r'Results/gui_img.jpg'  # Path dm3 File
+PATH = r'Results/gui_img.jpg'  # Path jpg File
 DPI = 100
 SCALE = 0.8
 
