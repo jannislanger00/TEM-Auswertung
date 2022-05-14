@@ -306,8 +306,8 @@ class ParticleDetection(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    # ex = Export_img(PATH)
-    # cv2.waitKey(0)
+    #ex = Export_img('Bilder/2020_11_04-Pd-aAl__18.dm3')
+    #cv2.waitKey(0)
     # path = ex.getImgPath()
     # print(path)
     fil = ParticleDetection('Results/gui_img.jpg')
