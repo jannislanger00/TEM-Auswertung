@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSlider, QLabel, QPushBut
 from PyQt5.QtCore import Qt
 import cv2
 from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
-from gui import Export_img
+from dm3_export import Export_img
 
 PATH = r'Results/gui_img.jpg'  # Path jpg File
 DPI = 100
