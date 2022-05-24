@@ -7,7 +7,7 @@ from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
 
 PATH = r'Bilder/2020_10_06-Pd-Zr__7.dm3'  # 'Bilder/2020_10_29-Pd-gAl__11.dm3'
 SCALE = 0.5
-ALPHA = 5  # Contrast
+ALPHA = 4  # Contrast
 BETA = -250   # Brightness
 
 #import dm3 bild
@@ -101,7 +101,7 @@ cv2.destroyAllWindows()
 
 #saving Data
 #cv2.imwrite(r'Results/particles3.jpg', img_original)
-size_in_nm = size*dm3f.pxsize[0]
+size_in_nm = size#*dm3f.pxsize[0]
 size_in_nm.tofile('Files/sample.csv', sep='\n')
 
 if __name__ == '__main__':
