@@ -3,8 +3,9 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QSlider, QLabel, QPushBut
 from PyQt5.QtCore import Qt
 import cv2
 from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
-PATH = r'Bilder/2020_11_04-Pd-aAl__18.dm3'
+PATH = r'Bilder/2020_11_12-PdPt19_100_C-black_2.dm3'
 DPI = 10
+SCALE = 0.7
 
 class Export_img(QMainWindow):
 
@@ -67,7 +68,8 @@ class Export_img(QMainWindow):
 
     def update_img(self, img):
         self.res = cv2.convertScaleAbs(img, alpha=self.alpha, beta=self.beta)
-        cv2.imshow('img', self.res)
+        show = cv2.resize(self.res, (0, 0), fx=SCALE, fy=SCALE)
+        cv2.imshow('img', show)
 
     def getImgPath(self):
         return self.img_path

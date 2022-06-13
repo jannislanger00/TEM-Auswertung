@@ -19,7 +19,7 @@ width = img.shape[0]
 #filtering
 gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 gray = cv2.GaussianBlur(gray, (13, 13), 0)
-th, bw = cv2.threshold(gray, 0.42*np.amax(gray), 255, cv2.THRESH_BINARY_INV)
+th, bw = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
 kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 output_bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel)
 #adaptive threshhold
@@ -77,7 +77,7 @@ cv2.putText(img_original, "30 nm", (width - 80 - int(30/(2*dm3f.pxsize[0])), 65)
 
 # change between images with arrow keys
 i=0
-frame = [img, ad_th, dist, nxcor, peaks, peaks8u, output_bw, img_original]
+frame = [img, bw, ad_th, nxcor, peaks, peaks8u, output_bw, img_original]
 for i in range(len(frame)):
     frame[i] = cv2.resize(frame[i], (0, 0), fx=SCALE, fy=SCALE)
 

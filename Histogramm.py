@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 
 file = open("Files/sample.csv")
 numpy_array = np. loadtxt(file)
-print(np.sort(numpy_array))
-
 n, bins, patches = plt.hist(x=numpy_array, bins='auto', color='#0504aa',
                             alpha=0.7, rwidth=0.85)
 

@@ -3,6 +3,7 @@ import numpy as np
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSlider, QLabel, QPushButton, QLineEdit
 from PyQt5.QtCore import Qt
 import cv2
+import matplotlib.pyplot as plt
 from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
 from dm3_export import Export_img
 
@@ -302,7 +303,22 @@ class ParticleDetection(QMainWindow):
 
         res = resizeImg(self.img_draw, SCALE)
         cv2.imshow('img', res)
+        ### Histogramm
+        size.tofile('Files/sample.csv', sep='\n')
+        file = open("Files/sample.csv")
+        numpy_array = np.array(size)
+        n, bins, patches = plt.hist(x=numpy_array, bins='auto', color='#0504aa',
+                                    alpha=0.7, rwidth=0.85)
 
+        plt.grid(axis='y', alpha=0.75)
+        plt.xlabel('Value')
+        plt.ylabel('Frequency')
+        plt.title('My Very Own Histogram')
+        plt.text(23, 45, r'$\mu=15, b=3$')
+        maxfreq = n.max()
+        # Set a clean upper y-axis limit.
+        plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
+        plt.show()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
