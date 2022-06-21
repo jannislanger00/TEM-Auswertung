@@ -22,7 +22,7 @@ class Ui_MainWindow(object):
         self.Image.setGeometry(QtCore.QRect(10, 10, 921, 751))
         self.Image.setAutoFillBackground(False)
         self.Image.setText("")
-        self.Image.setPixmap(QtGui.QPixmap("../../../../Pictures/1500737818.jpg"))
+        self.Image.setPixmap(QtGui.QPixmap("../../../Pictures/1500737818.jpg"))
         self.Image.setScaledContents(True)
         self.Image.setObjectName("Image")
 
@@ -109,7 +109,7 @@ class Ui_MainWindow(object):
         self.ParticleTemplate = QtWidgets.QLabel(self.centralwidget)
         self.ParticleTemplate.setGeometry(QtCore.QRect(760, 990, 111, 111))
         self.ParticleTemplate.setText("")
-        self.ParticleTemplate.setPixmap(QtGui.QPixmap("../../../../Pictures/s-l300 (2).png"))
+        self.ParticleTemplate.setPixmap(QtGui.QPixmap("../../../Pictures/s-l300 (2).png"))
         self.ParticleTemplate.setScaledContents(True)
         self.ParticleTemplate.setObjectName("ParticleTemplate")
 
@@ -182,3 +182,12 @@ class Ui_MainWindow(object):
         self.pushButton_3.setText(_translate("MainWindow", "Inner Positions"))
         self.label.setText(_translate("MainWindow", "Filter:"))
         self.menuinterfaceParticles.setTitle(_translate("MainWindow", "interfaceParticles"))
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWin = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWin)
+    MainWin.show()
+    sys.exit(app.exec_())
