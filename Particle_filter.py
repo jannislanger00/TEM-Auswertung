@@ -65,6 +65,7 @@ class ParticleDetection(QMainWindow):
         self.peaksTresh = 0.45
         self.blockSize = 41
         self.C = 2
+
         # Template
         self.particle_size = 20  # pixel
         self.gap = 14
@@ -197,6 +198,7 @@ class ParticleDetection(QMainWindow):
     def updateAdThresh(self):
         ad_th = cv2.adaptiveThreshold(self.gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
                                       self.blockSize, self.C)
+
         masked = cv2.bitwise_and(ad_th, ad_th, mask=self.output_bw)
         self.output_ad_th = cv2.morphologyEx(masked, cv2.MORPH_OPEN, self.kernel3)
         if self.comp_button.isChecked():

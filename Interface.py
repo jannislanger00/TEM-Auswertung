@@ -7,7 +7,7 @@ import numpy as np
 from desginer_ui import Ui_MainWindow
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QImage
-from processing_module import ParticleDetection
+from processing_module import ParticleProcessing
 
 PATH = r'Results/gui_img.jpg'  # Path jpg File
 DPI = 100
@@ -15,15 +15,14 @@ SCALE = 0.8
 
 
 
-class ParticleUserinterface():
+class ParticleUserinterface(ParticleProcessing):
 
     def __init__(self, path):
-        super().__init__()
-        self.p = ParticleDetection()
-        self.path = path
-        self.image = cv2.imread(self.path)
+        super().__init__(path)
+        #self.path = path
+        #self.image = cv2.imread(self.path)
         self.setupUi(MainWin)
-        self.show_image(self.image)
+        self.show_image(self.img)
         MainWin.show()
 
     def show_image(self, img):
@@ -37,6 +36,7 @@ class ParticleUserinterface():
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(947, 1181)
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.ImageWin = QtWidgets.QLabel(self.centralwidget)
@@ -48,15 +48,18 @@ class ParticleUserinterface():
         self.ImageWin.setObjectName("ImageWin")
 
         self.BackgroundSlide = QtWidgets.QSlider(self.centralwidget)
+        self.BackgroundSlide.setRange(0, 255)
         self.BackgroundSlide.setGeometry(QtCore.QRect(130, 831, 301, 21))
         self.BackgroundSlide.setOrientation(QtCore.Qt.Horizontal)
         self.BackgroundSlide.setObjectName("BackgroundSlide")
-        self.BackgroundSlide.valueChanged[int].connect(self.p.bg_change)
+        self.BackgroundSlide.valueChanged[int].connect(self.bg_change)
 
         self.AdaptiveSlide = QtWidgets.QSlider(self.centralwidget)
+        self.AdaptiveSlide.setRange(1, 100)
         self.AdaptiveSlide.setGeometry(QtCore.QRect(130, 880, 301, 21))
         self.AdaptiveSlide.setOrientation(QtCore.Qt.Horizontal)
         self.AdaptiveSlide.setObjectName("AdaptiveSlide")
+        self.AdaptiveSlide.valueChanged[int].connect(self.ad_change)
 
         self.PeakSlide = QtWidgets.QSlider(self.centralwidget)
         self.PeakSlide.setGeometry(QtCore.QRect(130, 931, 301, 21))
@@ -80,6 +83,7 @@ class ParticleUserinterface():
         self.Update = QtWidgets.QPushButton(self.centralwidget)
         self.Update.setGeometry(QtCore.QRect(60, 990, 171, 41))
         self.Update.setObjectName("Update")
+        self.Update.clicked.connect(self.update)
 
         self.ShowContours = QtWidgets.QPushButton(self.centralwidget)
         self.ShowContours.setGeometry(QtCore.QRect(250, 990, 171, 41))
@@ -210,6 +214,24 @@ class ParticleUserinterface():
         self.filterLabel.setText(_translate("MainWindow", "Filter:"))
         self.menuinterfaceParticles.setTitle(_translate("MainWindow", "interfaceParticles"))
 
+    def bg_change(self, val):
+        res = self.bg_thresh(val)
+        self.show_image(res)
+
+    def ad_change(self, val):
+        val = 2*val + 1
+        res = self.ad_thresh(val)
+        #cv2.imshow('2', res)
+        self.show_image(res)
+
+    def p_change(self, val):
+
+        res = self.bg_thresh(val)
+        self.show_image(res)
+
+
+    def update(self):
+        self.show_image(self.img)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

@@ -3,37 +3,71 @@ import numpy as np
 #from PyQt5.QtWidgets import QApplication, QMainWindow, QSlider, QLabel, QPushButton, QLineEdit
 #from PyQt5.QtCore import Qt
 import cv2
+#from Interface import ParticleUserinterface
+PATH = r'Results/gui_img.jpg'  # Path jpg File
+DPI = 100
+SCALE = 0.5
 
 
-class ParticleDetection():
+class ParticleProcessing():
 
-    def __init__(self):
-        # init Values
-        self.bg_thresh = 0.35
+    def __init__(self, path):
+        # init parameters
+        self.text_input = False
         self.peaksTresh = 0.45
         self.blockSize = 41
-        self.C = 2
+        self.C = 3
+        self.blur1 = 13
+        BGthresh = 128
+
+        self.kernel3 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        self.kernel5 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        self.img = cv2.imread(path)
+        self.gray = self.grayBlur()
+        self.BGimg = self.bg_thresh(BGthresh)
         # Template
         self.particle_size = 20  # pixel
         self.gap = 14
         # start up
-        self.kernel3 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        self.kernel5 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        self.text_input = False
 
-    def bg_change(self, img, val):
-        self.bg_thresh = val
-        gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
-        gray = cv2.GaussianBlur(gray, (13, 13), 0)
-        th, bw = cv2.threshold(gray, self.bg_thresh * np.amax(gray), 255, cv2.THRESH_BINARY_INV)
-        res = cv2.morphologyEx(bw, cv2.MORPH_OPEN, self.kernel5)
-#        if self.comp_button.isChecked():
-#            res = self.img.copy()
-#            contours, hierarchy = cv2.findContours(self.output_bw, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
-#            cv2.drawContours(res, contours, -1, (0, 255, 0), 2)
-#        else:
-#            res = self.output_bw
+
+    def grayBlur(self):
+        return cv2.GaussianBlur(cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY), (self.blur1, self.blur1), 0)
+
+    def bg_thresh(self, thresh):
+        th, bw = cv2.threshold(self.gray, thresh, 255, cv2.THRESH_BINARY_INV)
+        morf = cv2.morphologyEx(bw, cv2.MORPH_OPEN, self.kernel5)
+        self.BGimg = bw
+        print(self.BGimg.shape)
+        res = cv2.cvtColor(morf, cv2.COLOR_GRAY2BGR)
+
+        #cv2.imshow('res', res)
         return res
+
+    def ad_thresh(self, block):
+        self.blockSize = block
+        #self.C = c
+        gray = cv2.GaussianBlur(cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY), (self.blur1, self.blur1), 0)
+        ad_th = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
+                                      self.blockSize, self.C)
+        #self.BGimg = cv2.cvtColor(self.BGimg, cv2.COLOR_BGR2GRAY)
+        #print(self.BGimg.shape)
+        #masked = cv2.bitwise_and(ad_th, ad_th, mask=self.BGimg)
+        #morf = cv2.morphologyEx(masked, cv2.MORPH_OPEN, self.kernel3)
+        #res = cv2.cvtColor(self.BGimg, cv2.COLOR_GRAY2BGR)
+        #cv2.imshow('img', self.BGimg)
+
+        #cv2.imshow('res', res)
+        return ad_th
+
+    def thresh(self, val):
+        gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
+        th, bw = cv2.threshold(self.img, val, 255, cv2.THRESH_BINARY_INV)
+        gray2 = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+        return gray2
+
+    def hi(self, x):
+        print(x)
 
     def stackImages(self, scale, imgArray):
         rows = len(imgArray)
@@ -67,3 +101,13 @@ class ParticleDetection():
             hor = np.hstack(imgArray)
             ver = hor
         return ver
+
+    def resizeImg(self, img, scale):
+        res = cv2.resize(img, (0, 0), fx=scale, fy=scale)
+        return res
+
+if __name__ == "__main__":
+    a = ParticleProcessing(PATH)
+    a.ad_thresh(51)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
