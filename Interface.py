@@ -55,7 +55,7 @@ class ParticleUserinterface(ParticleProcessing):
         self.BackgroundSlide.valueChanged[int].connect(self.bg_change)
 
         self.AdaptiveSlide = QtWidgets.QSlider(self.centralwidget)
-        self.AdaptiveSlide.setRange(1, 100)
+        self.AdaptiveSlide.setRange(1, 75)
         self.AdaptiveSlide.setGeometry(QtCore.QRect(130, 880, 301, 21))
         self.AdaptiveSlide.setOrientation(QtCore.Qt.Horizontal)
         self.AdaptiveSlide.setObjectName("AdaptiveSlide")
@@ -65,6 +65,7 @@ class ParticleUserinterface(ParticleProcessing):
         self.PeakSlide.setGeometry(QtCore.QRect(130, 931, 301, 21))
         self.PeakSlide.setOrientation(QtCore.Qt.Horizontal)
         self.PeakSlide.setObjectName("PeakSlide")
+        self.PeakSlide.valueChanged[int].connect(self.p_change)
 
         self.MeanSlide = QtWidgets.QSlider(self.centralwidget)
         self.MeanSlide.setGeometry(QtCore.QRect(590, 880, 331, 22))
@@ -216,19 +217,20 @@ class ParticleUserinterface(ParticleProcessing):
 
     def bg_change(self, val):
         res = self.bg_thresh(val)
+        res = cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
         self.show_image(res)
 
     def ad_change(self, val):
         val = 2*val + 1
         res = self.ad_thresh(val)
-        #cv2.imshow('2', res)
+        res = cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
         self.show_image(res)
 
     def p_change(self, val):
-
-        res = self.bg_thresh(val)
+        val = val/100
+        res = self.p_thresh(val)
+        res = cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
         self.show_image(res)
-
 
     def update(self):
         self.show_image(self.img)

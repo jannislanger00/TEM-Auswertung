@@ -14,60 +14,83 @@ class ParticleProcessing():
     def __init__(self, path):
         # init parameters
         self.text_input = False
-        self.peaksTresh = 0.45
+        self.bgThresh = 128
+        self.peaksThresh = 0.45
         self.blockSize = 41
         self.C = 3
         self.blur1 = 13
         BGthresh = 128
-
+        # Template
+        self.particle_size = 20  # pixel
+        self.gap = 14
+        self.DistTempl()
+        #init images and kernels
         self.kernel3 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         self.kernel5 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
         self.img = cv2.imread(path)
         self.gray = self.grayBlur()
-        self.BGimg = self.bg_thresh(BGthresh)
-        # Template
-        self.particle_size = 20  # pixel
-        self.gap = 14
+        self.bgMask = self.bg_thresh(BGthresh)
+        _ = self.ad_thresh(5)
+
         # start up
 
+    def DistTempl(self):
+        borderSize = int((self.particle_size / 2) + self.gap)
+        kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
+                                            (2 * (borderSize - self.gap) + 1, 2 * (borderSize - self.gap) + 1))
+        kernel2 = cv2.copyMakeBorder(kernel2, self.gap, self.gap, self.gap, self.gap,
+                                     cv2.BORDER_CONSTANT | cv2.BORDER_ISOLATED, 0)
+        self.distTempl = cv2.distanceTransform(kernel2, cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
+        #return distTempl
 
     def grayBlur(self):
         return cv2.GaussianBlur(cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY), (self.blur1, self.blur1), 0)
 
-    def bg_thresh(self, thresh):
-        th, bw = cv2.threshold(self.gray, thresh, 255, cv2.THRESH_BINARY_INV)
-        morf = cv2.morphologyEx(bw, cv2.MORPH_OPEN, self.kernel5)
-        self.BGimg = bw
-        print(self.BGimg.shape)
-        res = cv2.cvtColor(morf, cv2.COLOR_GRAY2BGR)
-
+    def bg_thresh(self, thresh=None):
+        if thresh:
+            self.bgThresh = thresh
+        th, bw = cv2.threshold(self.gray, self.bgThresh, 255, cv2.THRESH_BINARY_INV)
+        self.bgMask = cv2.morphologyEx(bw, cv2.MORPH_OPEN, self.kernel5)
+        res = self.bgMask
         #cv2.imshow('res', res)
         return res
 
-    def ad_thresh(self, block):
-        self.blockSize = block
-        #self.C = c
-        gray = cv2.GaussianBlur(cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY), (self.blur1, self.blur1), 0)
-        ad_th = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
+    def ad_thresh(self, block = None, c = None):
+        if block:
+            self.blockSize = block
+        if c:
+            self.C = c
+        ad_th = cv2.adaptiveThreshold(self.gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
                                       self.blockSize, self.C)
         #self.BGimg = cv2.cvtColor(self.BGimg, cv2.COLOR_BGR2GRAY)
         #print(self.BGimg.shape)
-        #masked = cv2.bitwise_and(ad_th, ad_th, mask=self.BGimg)
-        #morf = cv2.morphologyEx(masked, cv2.MORPH_OPEN, self.kernel3)
-        #res = cv2.cvtColor(self.BGimg, cv2.COLOR_GRAY2BGR)
-        #cv2.imshow('img', self.BGimg)
+        masked = cv2.bitwise_and(ad_th, ad_th, mask=self.bgMask)
+        self.ad_out = cv2.morphologyEx(masked, cv2.MORPH_OPEN, self.kernel3)
+        res = self.ad_out
+        return res
 
-        #cv2.imshow('res', res)
-        return ad_th
-
-    def thresh(self, val):
-        gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
-        th, bw = cv2.threshold(self.img, val, 255, cv2.THRESH_BINARY_INV)
-        gray2 = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-        return gray2
+    def p_thresh(self, thresh=None):
+        if thresh:
+            self.peaksThresh = thresh
+        dist = cv2.distanceTransform(self.ad_out, cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
+        borderSize = int((self.particle_size / 2) + self.gap)
+        distborder = cv2.copyMakeBorder(dist, borderSize, borderSize, borderSize, borderSize,
+                                        cv2.BORDER_CONSTANT | cv2.BORDER_ISOLATED, 0)
+        self.nxcor = cv2.matchTemplate(distborder, self.distTempl, cv2.TM_CCOEFF_NORMED)
+        # Peaks
+        mn, mx, _, _ = cv2.minMaxLoc(self.nxcor)
+        th, peaks = cv2.threshold(self.nxcor, mx * self.peaksThresh, 255, cv2.THRESH_BINARY)
+        peaks8u = cv2.convertScaleAbs(peaks)
+        self.peaks8u = cv2.convertScaleAbs(peaks)
+        res = self.peaks8u
+        return res
 
     def hi(self, x):
         print(x)
+
+    def process_all(self):
+        self.bg_thresh()
+
 
     def stackImages(self, scale, imgArray):
         rows = len(imgArray)
@@ -108,6 +131,6 @@ class ParticleProcessing():
 
 if __name__ == "__main__":
     a = ParticleProcessing(PATH)
-    a.ad_thresh(51)
+    a.ad_thresh()
     cv2.waitKey(0)
     cv2.destroyAllWindows()

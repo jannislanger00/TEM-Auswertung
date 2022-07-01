@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from Aufgabe_Catalyst import read_dm3_file, dm3_to_cv
 from dm3_export import Export_img
 
-PATH = r'Results/gui_img.jpg'  # Path jpg File
+PATH = r'C:\Users\jannis\Documents\GitHub\IAT\data\my_photo-15.jpg'  # Path jpg File
 DPI = 100
 SCALE = 0.8
 
