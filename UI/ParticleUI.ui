@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>947</width>
-    <height>1181</height>
+    <width>953</width>
+    <height>1183</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
@@ -34,84 +40,6 @@
     </property>
     <property name="scaledContents">
      <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QSlider" name="BackgroundSlide">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>831</y>
-      <width>301</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QSlider" name="AdaptiveSlide">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>880</y>
-      <width>301</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QSlider" name="PeakSlide">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>931</y>
-      <width>301</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QSlider" name="horizontalSlider_4">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>830</y>
-      <width>331</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QSlider" name="MeanSlide">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>880</y>
-      <width>331</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QSlider" name="horizontalSlider_6">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>930</y>
-      <width>331</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
     </property>
    </widget>
    <widget class="QPushButton" name="Update">
@@ -170,58 +98,6 @@
     </property>
     <property name="text">
      <string>Original</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="BackgroundLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>830</y>
-      <width>111</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Background Thresh:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="AdaptiveLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>880</y>
-      <width>111</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Adaptive Thresh:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="MeanLabel">
-    <property name="geometry">
-     <rect>
-      <x>460</x>
-      <y>880</y>
-      <width>101</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Mean (Reduce):</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="PeaksLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>930</y>
-      <width>111</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Gradient Peaks:</string>
     </property>
    </widget>
    <widget class="QLabel" name="ParticleAproxLabel">
@@ -316,32 +192,6 @@ p, li { white-space: pre-wrap; }
      <string>Particle Template</string>
     </property>
    </widget>
-   <widget class="QLabel" name="LoremIpsum1">
-    <property name="geometry">
-     <rect>
-      <x>460</x>
-      <y>830</y>
-      <width>101</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Lorem Ipsum</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="LoremIpsum2">
-    <property name="geometry">
-     <rect>
-      <x>460</x>
-      <y>930</y>
-      <width>101</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Lorem Ipsum</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="ShowBackground">
     <property name="geometry">
      <rect>
@@ -394,13 +244,124 @@ p, li { white-space: pre-wrap; }
      <string>Filter:</string>
     </property>
    </widget>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>810</y>
+      <width>921</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMinimumSize</enum>
+     </property>
+     <item row="1" column="3">
+      <widget class="QSlider" name="MeanSlide">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QSlider" name="horizontalSlider_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="BackgroundLabel">
+       <property name="text">
+        <string>Background Thresh:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSlider" name="AdaptiveSlide">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="LoremIpsum1">
+       <property name="text">
+        <string>Lorem Ipsum</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QSlider" name="BackgroundSlide">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="AdaptiveLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Adaptive Thresh:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="MeanLabel">
+       <property name="text">
+        <string>Mean (Reduce):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="PeaksLabel">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Gradient Peaks:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSlider" name="PeakSlide">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="LoremIpsum2">
+       <property name="text">
+        <string>Lorem Ipsum</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QSlider" name="horizontalSlider_6">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>947</width>
+     <width>953</width>
      <height>21</height>
     </rect>
    </property>
