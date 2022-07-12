@@ -37,7 +37,9 @@ class ParticleUserinterface(ParticleProcessing):
         self.ImageWin.setPixmap(QtGui.QPixmap.fromImage(self.frame))
 
     def show_temp(self):
-        tmpImg = self.distTempl
+        tmpImg = self.template
+        cv2.cvtColor(tmpImg, cv2.COLOR_GRAY2BGR)
+        cv2.imshow(' e', tmpImg)
         tmpImg = QtGui.QImage(tmpImg.data, tmpImg.shape[1], tmpImg.shape[0],
                                   QtGui.QImage.Format_RGB888).rgbSwapped()
         self.ParticleTemplate.setPixmap(QtGui.QPixmap.fromImage(tmpImg))
@@ -59,7 +61,6 @@ class ParticleUserinterface(ParticleProcessing):
         else:
             res = self.ad_thresh()
             res = cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
-
         self.show_image(res)
 
     def p_change(self, val):
@@ -73,9 +74,18 @@ class ParticleUserinterface(ParticleProcessing):
 
     def mean_change(self, val):
         self.C = val
-        res = self.ad_thresh()
-        self.active = cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
-        self.show_image()
+        if self.ShowContours.isChecked():
+            res = self.ad_thresh(contours=True)
+        else:
+            res = self.ad_thresh()
+            res = cv2.cvtColor(res, cv2.COLOR_GRAY2BGR)
+        self.show_image(res)
+
+    def temp_change(self, val):
+        self.particle_size = val
+        self.DistTempl()
+
+        self.show_temp()
 
     def update(self):
         self.process_all()
@@ -129,10 +139,14 @@ class ParticleUserinterface(ParticleProcessing):
         self.horizontalSlider_4.setGeometry(QtCore.QRect(590, 830, 331, 22))
         self.horizontalSlider_4.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_4.setObjectName("horizontalSlider_4")
+
         self.horizontalSlider_6 = QtWidgets.QSlider(self.centralwidget)
+        self.horizontalSlider_6.setRange(5, 50)
+        self.horizontalSlider_6.setSliderPosition(self.particle_size)
         self.horizontalSlider_6.setGeometry(QtCore.QRect(590, 930, 331, 22))
         self.horizontalSlider_6.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider_6.setObjectName("horizontalSlider_6")
+        self.horizontalSlider_6.valueChanged[int].connect(self.temp_change)
 
         self.Update = QtWidgets.QPushButton(self.centralwidget)
         self.Update.setGeometry(QtCore.QRect(60, 990, 171, 41))
@@ -201,6 +215,7 @@ class ParticleUserinterface(ParticleProcessing):
         self.LoremIpsum1 = QtWidgets.QLabel(self.centralwidget)
         self.LoremIpsum1.setGeometry(QtCore.QRect(460, 830, 101, 16))
         self.LoremIpsum1.setObjectName("LoremIpsum1")
+
         self.LoremIpsum2 = QtWidgets.QLabel(self.centralwidget)
         self.LoremIpsum2.setGeometry(QtCore.QRect(460, 930, 101, 16))
         self.LoremIpsum2.setObjectName("LoremIpsum2")
@@ -225,12 +240,15 @@ class ParticleUserinterface(ParticleProcessing):
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 947, 21))
         self.menubar.setObjectName("menubar")
+
         self.menuinterfaceParticles = QtWidgets.QMenu(self.menubar)
         self.menuinterfaceParticles.setObjectName("menuinterfaceParticles")
         MainWindow.setMenuBar(self.menubar)
+
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+
         self.menubar.addAction(self.menuinterfaceParticles.menuAction())
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)

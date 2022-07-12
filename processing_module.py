@@ -31,18 +31,20 @@ class ParticleProcessing():
         self.img = cv2.imread(path)
         self.gray = self.grayBlur()
         self.bgMask = self.bg_thresh(BGthresh)
-        _ = self.ad_thresh(5)
+        self.process_all()
 
         # start up
 
-    def DistTempl(self):
+    def DistTempl(self, size=None):
+        if size is not None:
+            self.particle_size = size
         borderSize = int((self.particle_size / 2) + self.gap)
         kernel2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,
                                             (2 * (borderSize - self.gap) + 1, 2 * (borderSize - self.gap) + 1))
         kernel2 = cv2.copyMakeBorder(kernel2, self.gap, self.gap, self.gap, self.gap,
                                      cv2.BORDER_CONSTANT | cv2.BORDER_ISOLATED, 0)
-        self.distTempl = cv2.distanceTransform(kernel2, cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
-        #return distTempl
+        self.template = cv2.distanceTransform(kernel2, cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
+        return self.template
 
     def grayBlur(self):
         return cv2.GaussianBlur(cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY), (self.blur1, self.blur1), 0)
@@ -50,9 +52,10 @@ class ParticleProcessing():
     def bg_thresh(self, thresh=None, contours = False):
         if thresh is not None:
             self.bgThresh = thresh
+        # Background Processing
         th, bw = cv2.threshold(self.gray, self.bgThresh, 255, cv2.THRESH_BINARY_INV)
         self.bgMask = cv2.morphologyEx(bw, cv2.MORPH_OPEN, self.kernel5)
-
+        # Prepare Result
         if contours:
             res = self.img.copy()
             contours, hierarchy = cv2.findContours(self.bgMask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -61,18 +64,17 @@ class ParticleProcessing():
             res = self.bgMask
         return res
 
-    def ad_thresh(self, block=None, c=None, contours = False):
+    def ad_thresh(self, block=None, c=None, contours=False):
         if block is not None:
             self.blockSize = block
-        if c:
+        if c is not None:
             self.C = c
+        # Adaptive Processing
         ad_th = cv2.adaptiveThreshold(self.gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
                                       self.blockSize, self.C)
-        #self.BGimg = cv2.cvtColor(self.BGimg, cv2.COLOR_BGR2GRAY)
-        #print(self.BGimg.shape)
         masked = cv2.bitwise_and(ad_th, ad_th, mask=self.bgMask)
         self.ad_out = cv2.morphologyEx(masked, cv2.MORPH_OPEN, self.kernel3)
-
+        # Prepare Result
         if contours:
             res = self.img.copy()
             contours, hierarchy = cv2.findContours(self.ad_out, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -84,19 +86,18 @@ class ParticleProcessing():
     def p_thresh(self, thresh=None, contours = False):
         if thresh is not None:
             self.peaksThresh = thresh
-
+        # Distance Transform ~ Match template
         self.dist = cv2.distanceTransform(self.ad_out, cv2.DIST_L2, cv2.DIST_MASK_PRECISE)
         borderSize = int((self.particle_size / 2) + self.gap)
         distborder = cv2.copyMakeBorder(self.dist, borderSize, borderSize, borderSize, borderSize,
                                         cv2.BORDER_CONSTANT | cv2.BORDER_ISOLATED, 0)
-        self.nxcor = cv2.matchTemplate(distborder, self.distTempl, cv2.TM_CCOEFF_NORMED)
-        # Peaks
+        self.nxcor = cv2.matchTemplate(distborder, self.template, cv2.TM_CCOEFF_NORMED)
+        # Get Peaks
         mn, mx, _, _ = cv2.minMaxLoc(self.nxcor)
         th, peaks = cv2.threshold(self.nxcor, mx * self.peaksThresh, 255, cv2.THRESH_BINARY)
-
-
         peaks8u = cv2.convertScaleAbs(peaks)
         self.peaks8u = cv2.convertScaleAbs(peaks)
+        # Prepare Result
         if contours:
             res = self.img.copy()
             contours, hierarchy = cv2.findContours(self.peaks8u, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -147,7 +148,6 @@ class ParticleProcessing():
         numpy_array = np.array(size)
         n, bins, patches = plt.hist(x=numpy_array, bins='auto', color='#0504aa',
                                     alpha=0.7, rwidth=0.85)
-
         plt.grid(axis='y', alpha=0.75)
         plt.xlabel('Size')
         plt.ylabel('Frequency')
@@ -197,8 +197,8 @@ class ParticleProcessing():
 
 if __name__ == "__main__":
     a = ParticleProcessing(PATH)
-    a.calcParticles()
+    res = a.DistTempl(15)
     #res = a.calcParticles()
-    #cv2.imshow('eres', res)
+    cv2.imshow('eres', res)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
